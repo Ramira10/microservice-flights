@@ -1,41 +1,40 @@
 import { Body, Controller, Get, Param, Post, Put, Delete } from '@nestjs/common';
 import { FlightService } from './flight.service';
 import { FlightDTO } from './dto/flight.dto';
-
+import { MessagePattern, Payload } from '@nestjs/microservices/decorators';
+import { FlightMSG } from 'src/common/constants';
 @Controller()
 export class FlightController {
 
     constructor(private readonly flightService: FlightService) { }
 
-    @Post()
-    create(@Body() flightDTO: FlightDTO) {
+    @MessagePattern(FlightMSG.CREATE)
+    create(@Payload() flightDTO: FlightDTO) {
         return this.flightService.create(flightDTO);
     }
 
-    @Get()
+    @MessagePattern(FlightMSG.FIND_ALL)
     findAll() {
         return this.flightService.findAll();
     }
 
-    @Get(":id")
-    findOne(@Param('id') id: string) {
+    @MessagePattern(FlightMSG.FIND_ONE)
+    findOne(@Payload('id') id: string) {
         return this.flightService.findOne(id);
     }
 
-    @Put(":id")
-    update(@Param('id') id: string, @Body() flightDTO: FlightDTO) {
-        return this.flightService.update(id, flightDTO);
+    @MessagePattern(FlightMSG.UPDATE)
+    update(@Payload() payload: any) {
+        return this.flightService.update(payload.id, payload.flightDTO);
     }
 
-    @Delete(":id")
-    delete(@Param('id') id: string) {
+    @MessagePattern(FlightMSG.DELETE)
+    delete(@Payload('id') id: string) {
         return this.flightService.delete(id);
     }
 
-    // @Post(':flightId/passenger/:passengerId')
-    // async addPassenger(@Param('flightId') flightId: string, @Param('passengerId') passengerId: string) {
-    //     const passenger = await this.passengerService.findOne(passengerId);
-    //     if (!passenger) throw new HttpException('Passenger Not Found.', HttpStatus.NOT_FOUND);
-    //     return this.flightService.addPassenger(flightId, passengerId)
-    // }
+    @MessagePattern(FlightMSG.ADD_PASSENGER)
+    async addPassenger(@Payload() payload: any) {
+        return this.flightService.addPassenger(payload.flightId, payload.passengerId);
+    }
 }
